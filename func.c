@@ -292,7 +292,7 @@ void highlight(buffer *buf, int startRow, int endRow, int startCol, int endCol)
 	int i = 0;
 	node *temp;
 
-	temp = buf->start;
+	temp = buf->head;
 	while (i != startRow)
 	{
 		if (temp == NULL)
@@ -1189,13 +1189,19 @@ void search(buffer *buf)
 			{
 				chtemp[i] = (char)temp->p[i];
 			}
-			if (chtemp[i - 1] == '\n')
+			if (i > 0 && chtemp[i - 1] == '\n')
 				i = i - 1;
 			chtemp[i] = ' ';
 			chtemp[i + 1] = '\0';
 
 			// To separate each word of the line and compare it with the substring to be searched
 			foundWord = strtok(chtemp, " ");
+			if (foundWord == NULL)
+			{
+				temp = temp->next;
+				rowCount++;
+				continue;
+			}
 			startCol = foundWord - chtemp;
 			while (foundWord != NULL)
 			{
@@ -1207,7 +1213,8 @@ void search(buffer *buf)
 					highlight(buf, rowCount, rowCount, startCol, startCol + strlen(word) - 1);
 				}
 				foundWord = strtok(NULL, " ");
-				startCol = foundWord - chtemp;
+				if (foundWord != NULL)
+					startCol = foundWord - chtemp;
 			}
 			temp = temp->next;
 			rowCount++;
@@ -1293,12 +1300,18 @@ void search(buffer *buf)
 			{
 				chtemp[i] = (char)temp->p[i];
 			}
-			if (chtemp[i - 1] == '\n')
+			if (i > 0 && chtemp[i - 1] == '\n')
 				i = i - 1;
 			chtemp[i] = ' ';
 			chtemp[i + 1] = '\0';
 
 			foundWord = strtok(chtemp, " ");
+			if (foundWord == NULL)
+			{
+				temp = temp->next;
+				rowCount++;
+				continue;
+			}
 			startCol = foundWord - chtemp;
 			while (foundWord != NULL)
 			{
@@ -1322,7 +1335,8 @@ void search(buffer *buf)
 					}
 				}
 				foundWord = strtok(NULL, " ");
-				startCol = (foundWord - chtemp) + (diff * countReplace);
+				if (foundWord != NULL)
+					startCol = (foundWord - chtemp) + (diff * countReplace);
 			}
 			temp = temp->next;
 			rowCount++;
@@ -1347,12 +1361,18 @@ void search(buffer *buf)
 			{
 				chtemp[i] = (char)temp->p[i];
 			}
-			if (chtemp[i - 1] == '\n')
+			if (i > 0 && chtemp[i - 1] == '\n')
 				i = i - 1;
 
 			chtemp[i] = ' ';
 			chtemp[i + 1] = '\0';
 			foundWord = strtok(chtemp, " ");
+			if (foundWord == NULL)
+			{
+				temp = temp->next;
+				rowCount++;
+				continue;
+			}
 			startCol = foundWord - chtemp;
 			while (foundWord != NULL)
 			{
@@ -1363,7 +1383,8 @@ void search(buffer *buf)
 					highlight(buf, rowCount, rowCount, startCol, startCol + strlen(word) - 1);
 				}
 				foundWord = strtok(NULL, " ");
-				startCol = foundWord - chtemp;
+				if (foundWord != NULL)
+					startCol = foundWord - chtemp;
 			}
 			temp = temp->next;
 			rowCount++;

@@ -1,4 +1,12 @@
 #include <ncurses.h>
+
+// Key code definitions for cross-platform compatibility
+#define KEY_TAB 9
+#define KEY_NEWLINE 10
+#define KEY_BACKSPACE_ALT 127
+#define KEY_BACKSPACE_CTRL 8
+#define KEY_DELETE_ALT 330
+
 typedef struct node
 {
 	int *p;
