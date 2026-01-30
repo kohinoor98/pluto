@@ -6,6 +6,10 @@ A lightweight, terminal-based text editor that uses familiar keyboard shortcuts 
 
 Pluto is designed to provide an intuitive editing experience using standard keyboard shortcuts (Ctrl+C, Ctrl+V, Ctrl+S, etc.) that users are already familiar with from modern GUI editors. Unlike vim's modal approach, Pluto lets you start typing immediately without learning new editing paradigms.
 
+## About This Project
+
+Pluto was built by our team during our sophomore (second) year of college. It's primarily a passion project and is still a work in progress - contributions and feedback are welcome!
+
 ## Features
 
 - **Standard text editing** - Insert, backspace, delete

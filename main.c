@@ -158,14 +158,20 @@ int main(int argc, char *argv[])
 			err = saveAs(&text); // Ctrl S to Save As
 			if (err == -1)
 			{
+				// Error occurred
 				destroyBuffer(&text);
 				clear();
 				delwin(win);
 				endwin();
 				return 0;
 			}
+			else if (err == -2)
+			{
+				// Cancelled, continue editing
+				printBuffer(&text);
+			}
 			else
-				break; // Stop accepting input after saving and quit
+				break; // Success, stop accepting input and quit
 		}
 		else if (c == CTRL_KEYPRESS('o'))
 		{

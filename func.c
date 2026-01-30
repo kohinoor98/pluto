@@ -152,7 +152,14 @@ int saveAs(buffer *buf)
 	}
 
 	if (fname[0] == '\0')
-		return -1;
+	{
+		wclear(win);
+		callBox();
+		mvwprintw(win, 1, 1, "Save cancelled - no filename entered");
+		wrefresh(win);
+		getch();  // Wait for user acknowledgment
+		return -2;  // Cancelled, continue editing
+	}
 
 	fp = fopen(fname, "w+");
 	if (fp == NULL)
