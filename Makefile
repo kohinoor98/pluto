@@ -4,7 +4,7 @@ CFlags =-c -Wall -g
 all: first
 
 first: main.o func.o 
-	$(CC) main.o func.o -o project -lncurses
+	$(CC) main.o func.o -o pluto -lncurses
 	
 main.o: main.c
 	$(CC) $(CFlags) main.c
@@ -14,4 +14,4 @@ func.o: func.c
 	
 #Deleting all object files
 clean:
-	rm -rf *o project
+	rm -rf *o pluto

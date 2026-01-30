@@ -6,35 +6,40 @@
 
 int maxRows, maxCols;
 int cRow, cCol;
-WINDOW* win;
+WINDOW *win;
 int tabglobal = 4, indentglobal = 0;
 int flag = 0, initr = 0, initc = 0, right = 0, left = 0, righta = 0;
 char copy1[1500];
 
 /*------------------------ FILE HANDLING -------------------------*/
-int fileExists(char *file) {
+int fileExists(char *file)
+{
 	FILE *fp;
 	fp = fopen(file, "r");
-	if(fp == NULL)
+	if (fp == NULL)
 		return -1;
-	else {
+	else
+	{
 		fclose(fp);
 		return 0;
 	}
 }
 
-FILE* openNewFile(buffer *buf, FILE *fp) {
+FILE *openNewFile(buffer *buf, FILE *fp)
+{
 	node *temp;
 	char ch, fname[20];
 	int c = 0, i = 0, exists = 0, mode;
 	FILE *fp_new;
-	
+
 	callBox();
-	
-	//To write data from the data structure into old file and close file
+
+	// To write data from the data structure into old file and close file
 	temp = buf->head;
-	while(temp != NULL) {
-		while(temp->p[i] != '\0') {
+	while (temp != NULL)
+	{
+		while (temp->p[i] != '\0')
+		{
 			ch = (char)temp->p[i];
 			fwrite(&ch, 1, 1, fp);
 			i++;
@@ -43,20 +48,22 @@ FILE* openNewFile(buffer *buf, FILE *fp) {
 		i = 0;
 	}
 	fclose(fp);
-	destroyBuffer(buf); //To empty the buffer data structure
+	destroyBuffer(buf); // To empty the buffer data structure
 
 	wclear(win);
 	callBox();
 	mvwprintw(win, 1, 1, "Enter the name of the file to be Opened:\t");
 
-	//To accept user input
+	// To accept user input
 	wrefresh(win);
 	i = 0;
 	wmove(win, 2, 1);
 	wrefresh(win);
 	fname[0] = '\0';
-	while((ch = getch()) != '\n') {
-		if(ch == 7) {
+	while ((ch = getch()) != '\n')
+	{
+		if (ch == 7)
+		{
 			i--;
 			fname[i] = '\0';
 			wclear(win);
@@ -64,62 +71,69 @@ FILE* openNewFile(buffer *buf, FILE *fp) {
 			mvwprintw(win, 1, 1, "Enter the name of the file to be Opened:\t");
 			wrefresh(win);
 		}
-		else {
+		else
+		{
 			fname[i] = ch;
 			fname[i + 1] = '\0';
 			i++;
 		}
 		mvwprintw(win, 2, 1, "%s", fname);
 		wrefresh(win);
-	}	
+	}
 
 	exists = fileExists(fname);
-	if(exists == -1) { //File does not exist
+	if (exists == -1)
+	{ // File does not exist
 		fp_new = fopen(fname, "w+");
-		if(fp_new == NULL)
+		if (fp_new == NULL)
 			return NULL;
 		mode = 0;
 		win = initNcurses(mode);
 	}
-	else { //File exists
+	else
+	{ // File exists
 		fp_new = fopen(fname, "r+");
-		if(fp_new == NULL)
+		if (fp_new == NULL)
 			return NULL;
 		mode = 1;
 		win = initNcurses(mode);
-		while((ch = fgetc(fp_new)) != EOF) {
+		while ((ch = fgetc(fp_new)) != EOF)
+		{
 			c = (int)ch;
 			insertBuffer(buf, c);
 		}
 		fclose(fp_new);
-		//To erase the previous contents of the file in order to rewrite
+		// To erase the previous contents of the file in order to rewrite
 		fp_new = fopen(fname, "w");
-		move(0,0);
+		move(0, 0);
 	}
 	refresh();
 	return fp_new;
 }
 
-int saveAs(buffer *buf) { 
-	//Saves contents of the data structure
+int saveAs(buffer *buf)
+{
+	// Saves contents of the data structure
 	char ch, fname[20];
 	node *temp;
 	int i = 0;
 	FILE *fp;
-	
+
 	wclear(win);
 	callBox();
-	
+
 	mvwprintw(win, 1, 1, "Enter the name of the file :\t");
 
-	//To accept user input
+	// To accept user input
 	wrefresh(win);
 	i = 0;
 	wmove(win, 2, 1);
 	wrefresh(win);
 	fname[0] = '\0';
-	while((ch = getch()) != '\n') {
-		if(ch == 7) {
+	while ((ch = getch()) != '\n')
+	{
+		if (ch == 7)
+		{
 			i--;
 			fname[i] = '\0';
 			wclear(win);
@@ -127,7 +141,8 @@ int saveAs(buffer *buf) {
 			mvwprintw(win, 1, 1, "Enter the name of the file :\t");
 			wrefresh(win);
 		}
-		else {
+		else
+		{
 			fname[i] = ch;
 			fname[i + 1] = '\0';
 			i++;
@@ -135,19 +150,22 @@ int saveAs(buffer *buf) {
 		mvwprintw(win, 2, 1, "%s", fname);
 		wrefresh(win);
 	}
-	
-	if(fname[0] == '\0')
-		return -1;	
-	
+
+	if (fname[0] == '\0')
+		return -1;
+
 	fp = fopen(fname, "w+");
-	if(fp == NULL) {
+	if (fp == NULL)
+	{
 		mvwprintw(win, 1, 1, "Error : Data not saved\n");
 		return -1;
 	}
 	i = 0;
 	temp = buf->head;
-	while(temp != NULL) {
-		while(temp->p[i] != '\0') {
+	while (temp != NULL)
+	{
+		while (temp->p[i] != '\0')
+		{
 			ch = (char)temp->p[i];
 			fputc(ch, fp);
 			i++;
@@ -165,46 +183,52 @@ int saveAs(buffer *buf) {
 	return 0;
 }
 
-void readFileToBuffer(buffer *buf, FILE *fp) {
+void readFileToBuffer(buffer *buf, FILE *fp)
+{
 	node *temp, *temp2;
 	int c, i = 0, fileflag = 0;
 	temp = buf->head;
-	while((c = getc(fp)) != EOF) {
-		fileflag = 1; 
-		if(buf->head == NULL) {
-			temp2 = (node*)malloc(sizeof(node));
+	while ((c = getc(fp)) != EOF)
+	{
+		fileflag = 1;
+		if (buf->head == NULL)
+		{
+			temp2 = (node *)malloc(sizeof(node));
 			buf->bufRows++;
-			temp2->p = (int*)malloc(sizeof(int)*maxCols);
+			temp2->p = (int *)malloc(sizeof(int) * maxCols);
 			temp = buf->head = buf->tail = buf->start = buf->end = temp2;
 			temp->next = temp->prev = NULL;
 		}
-		if(c != '\0') {
+		if (c != '\0')
+		{
 			temp->p[i] = c;
 			temp->p[i + 1] = '\0';
 		}
 		i++;
-		if(c == '\n' || c == '\0' || i > (maxCols - 1)) {
-			temp2 = (node*)malloc(sizeof(node));
+		if (c == '\n' || c == '\0' || i > (maxCols - 1))
+		{
+			temp2 = (node *)malloc(sizeof(node));
 			buf->bufRows++;
-			temp2->p = (int*)malloc(sizeof(int)*maxCols);
+			temp2->p = (int *)malloc(sizeof(int) * maxCols);
 			temp2->next = NULL;
 			temp2->prev = temp;
 			temp->next = temp2;
 			buf->tail = temp2;
-			
-			if(buf->bufRows < maxRows)
+
+			if (buf->bufRows < maxRows)
 				buf->end = buf->tail;
 
 			temp = temp->next;
 			i = 0;
 		}
 	}
-	if(fileflag == 1) //To overcome condition when file exists but contains no character
+	if (fileflag == 1) // To overcome condition when file exists but contains no character
 		printBuffer(buf);
 }
-	
+
 /*----------------------- INITIALIZE NCURSES -----------------------*/
-WINDOW* initNcurses(int mode) {
+WINDOW *initNcurses(int mode)
+{
 	int heightWin, widthWin, startRowWin, startColWin;
 
 	initscr();
@@ -214,38 +238,40 @@ WINDOW* initNcurses(int mode) {
 	keypad(win, TRUE);
 	mousemask(BUTTON1_PRESSED | BUTTON_CTRL, NULL);
 	clear();
-	move(0,10);
+	move(0, 10);
 
-	if(mode == 0)
+	if (mode == 0)
 		printw("Pluto version - 0.0.0 Press any character to begin editing!");
 	else
 		printw("Pluto version - 0.0.0 Press any character to continue editing!");
-	
+
 	addTilda();
 	getch();
 	clear();
 	addTilda();
-	
-	//To create a new window
+
+	// To create a new window
 	getyx(stdscr, cRow, cCol);
 	getmaxyx(stdscr, maxRows, maxCols);
 	heightWin = 5;
 	widthWin = maxCols;
 	startColWin = 0;
-	startRowWin = maxRows-5;
+	startRowWin = maxRows - 5;
 	win = newwin(heightWin, widthWin, startRowWin, startColWin);
 	refresh();
-	move(0,0);
-	
+	move(0, 0);
+
 	return win;
 }
 
-void addTilda() {
+void addTilda()
+{
 	int i;
 	getyx(stdscr, cRow, cCol);
 	i = cRow + 1;
 	getmaxyx(stdscr, maxRows, maxCols);
-	while(i < maxRows) {
+	while (i < maxRows)
+	{
 		move(i, 0);
 		wprintw(stdscr, "~");
 		i++;
@@ -253,139 +279,164 @@ void addTilda() {
 	wmove(stdscr, 0, 0);
 }
 
-void callBox() {
-	//To make the window in the bottom visible
+void callBox()
+{
+	// To make the window in the bottom visible
 	refresh();
 	box(win, 0, 0);
-	wrefresh(win);	
+	wrefresh(win);
 }
 
-void highlight(buffer *buf, int startRow, int endRow, int startCol, int endCol) {
+void highlight(buffer *buf, int startRow, int endRow, int startCol, int endCol)
+{
 	int i = 0;
 	node *temp;
 
-	temp = buf->start;	
-	while(i != startRow) {
+	temp = buf->start;
+	while (i != startRow)
+	{
 		temp = temp->next;
 		i++;
 	}
 
-	attron(A_BOLD|A_STANDOUT); //To switch on highlight attribute
-	for(i = startCol; i <= endCol; i++) 
+	attron(A_BOLD | A_STANDOUT); // To switch on highlight attribute
+	for (i = startCol; i <= endCol; i++)
 		mvprintw(startRow, i, "%c", temp->p[i]);
-	attroff(A_BOLD|A_STANDOUT);
+	attroff(A_BOLD | A_STANDOUT);
 }
 
-void resizeTerminal(buffer *buf) {
+void resizeTerminal(buffer *buf)
+{
 	node *temp;
+	int *newp;
 
 	endwin();
 	refresh();
 	clear();
 	getmaxyx(stdscr, maxRows, maxCols);
-	
+
 	temp = buf->head;
 	buf->start = buf->head;
-	while(temp != NULL) {
-		temp->p = realloc(temp->p, sizeof(int)*maxCols);
+	while (temp != NULL)
+	{
+		newp = realloc(temp->p, sizeof(int) * maxCols);
+		if (newp != NULL)
+		{
+			temp->p = newp;
+		}
+		// If realloc fails, keep the old pointer
 		temp = temp->next;
 	}
 	printBuffer(buf);
 }
-	
+
 /*---------------------- DATA STRUCTURE HANDLING ------------------------*/
-void initBuffer(buffer *buf) {
+void initBuffer(buffer *buf)
+{
 	buf->head = buf->tail = buf->start = buf->end = NULL;
 	buf->bufRows = -1;
 }
 
-void insertBuffer(buffer *buf, int c) {
+void insertBuffer(buffer *buf, int c)
+{
 	node *temp, *temp2, *temp3, *nextNode;
 	int i, j, count = 0, row, col, ctemp;
 	int cnt = 0, spacecnt = 0;
 
 	righta = 0;
 
-	//Condition for first character entered in editor
-	if((buf->head == buf->tail) && (buf->head == NULL)) {
-		temp = (node*)malloc(sizeof(node));
+	// Condition for first character entered in editor
+	if ((buf->head == buf->tail) && (buf->head == NULL))
+	{
+		temp = (node *)malloc(sizeof(node));
 		buf->bufRows++;
 		temp->next = temp->prev = NULL;
 		buf->head = buf->tail = temp;
 		buf->start = buf->head;
 		buf->end = buf->tail;
-		temp->p = (int*)malloc(sizeof(int)*maxCols);
+		temp->p = (int *)malloc(sizeof(int) * maxCols);
 		temp->p[0] = c;
 		temp->p[1] = '\0';
 		printBuffer(buf);
 	}
-	else {
+	else
+	{
 		getyx(stdscr, cRow, cCol);
 		row = cRow;
 		col = cCol;
 		temp = buf->start;
 		i = 0;
-		while(i != row) {
-			//Condition when input reaches end of line, to create a new line
-			if(temp->next == NULL) {
-				temp2 = (node*)malloc(sizeof(node));
+		while (i != row)
+		{
+			// Condition when input reaches end of line, to create a new line
+			if (temp->next == NULL)
+			{
+				temp2 = (node *)malloc(sizeof(node));
 				buf->bufRows++;
-				temp2->p = (int*)malloc(sizeof(int)*maxCols);
+				temp2->p = (int *)malloc(sizeof(int) * maxCols);
 				temp2->p[0] = '\0';
 				temp2->next = NULL;
 				temp2->prev = temp;
 				temp->next = temp2;
 				buf->tail = temp2;
-				
-				if(row != maxRows)
+
+				if (row != maxRows)
 					buf->end = buf->tail;
 				temp = temp2;
 			}
-			else 
+			else
 				temp = temp->next;
 			i++;
 		}
-		//Assert : temp points to the line where the character has to be inserted
-		//Condition for insertion taking place at the end of the line
-		if(temp->p[col] == '\0') {
-			//For automatic indentation
-			if(c == '\n' && indentglobal == 1) {
-				for(cnt = 0; temp->p[cnt] != '\0'; cnt++);
-				if(cnt >= tabglobal) {
-					for(cnt = 0; temp->p[cnt] != '\0'; cnt++) {
-						if(temp->p[cnt] != 32)
+		// Assert : temp points to the line where the character has to be inserted
+		// Condition for insertion taking place at the end of the line
+		if (temp->p[col] == '\0')
+		{
+			// For automatic indentation
+			if (c == '\n' && indentglobal == 1)
+			{
+				for (cnt = 0; temp->p[cnt] != '\0'; cnt++)
+					;
+				if (cnt >= tabglobal)
+				{
+					for (cnt = 0; temp->p[cnt] != '\0'; cnt++)
+					{
+						if (temp->p[cnt] != 32)
 							break;
 						spacecnt++;
 					}
 					spacecnt = spacecnt / tabglobal;
-					if(spacecnt > 0) {
+					if (spacecnt > 0)
+					{
 						temp->p[col] = c;
 						temp->p[col + 1] = '\0';
 						move(row + 1, 0);
-						for(cnt = 0; cnt < spacecnt; cnt++)
+						for (cnt = 0; cnt < spacecnt; cnt++)
 							insertTab(buf);
 						return;
 					}
 				}
 			}
-						
-						
-			//Enter pressed at the end of the last line
-			if((cRow + 1) == maxRows && c == '\n') {
+
+			// Enter pressed at the end of the last line
+			if ((cRow + 1) == maxRows && c == '\n')
+			{
 				temp->p[col] = c;
 				temp->p[col + 1] = '\0';
-				
-				//Not the last line in the data structure
-				if(temp->next != NULL) {
+
+				// Not the last line in the data structure
+				if (temp->next != NULL)
+				{
 					buf->start = buf->start->next;
 					buf->end = buf->end->next;
 					printBuffer(buf);
 				}
-				//Last line in the data structure
-				else {
-					temp2 = (node*)malloc(sizeof(node));
+				// Last line in the data structure
+				else
+				{
+					temp2 = (node *)malloc(sizeof(node));
 					buf->bufRows++;
-					temp2->p = (int*)malloc(sizeof(int)*maxCols);
+					temp2->p = (int *)malloc(sizeof(int) * maxCols);
 					temp2->p[0] = '\0';
 					temp2->next = NULL;
 					temp2->prev = temp;
@@ -396,13 +447,15 @@ void insertBuffer(buffer *buf, int c) {
 				}
 				return;
 			}
-			if(col != (maxCols - 2)) {
+			if (col != (maxCols - 2))
+			{
 				temp->p[col] = c;
 				temp->p[col + 1] = '\0';
 				printBuffer(buf);
 			}
-			//Overflow condition for the line
-			else {
+			// Overflow condition for the line
+			else
+			{
 				temp->p[col] = '\n';
 				temp->p[col + 1] = '\0';
 				printBuffer(buf);
@@ -410,29 +463,33 @@ void insertBuffer(buffer *buf, int c) {
 				insertBuffer(buf, c);
 			}
 		}
-		else {
-			//Condition when insertion takes place in the middle of a line
-			//For enter
-			if(c == 10) {
-				temp3 = (node*)malloc(sizeof(node));
+		else
+		{
+			// Condition when insertion takes place in the middle of a line
+			// For enter
+			if (c == 10)
+			{
+				temp3 = (node *)malloc(sizeof(node));
 				buf->bufRows++;
-				temp3->p = (int*)malloc(sizeof(int)*maxCols);
-				//Copying chars from original line to new line after cursor position
+				temp3->p = (int *)malloc(sizeof(int) * maxCols);
+				// Copying chars from original line to new line after cursor position
 				j = 0;
-				for(i = col; temp->p[i] != '\0'; i++) {
+				for (i = col; temp->p[i] != '\0'; i++)
+				{
 					temp3->p[j] = temp->p[i];
 					j++;
 				}
 				temp3->p[j] = '\0';
-				temp->p[col] = c; //Inserting \n for printBuffer
+				temp->p[col] = c; // Inserting \n for printBuffer
 				temp->p[col + 1] = '\0';
 
 				nextNode = temp->next;
-				
-				//Condition for new line being the last line
-				if(nextNode == NULL) {
+
+				// Condition for new line being the last line
+				if (nextNode == NULL)
+				{
 					buf->tail = temp3;
-					if(row != maxRows)
+					if (row != maxRows)
 						buf->end = temp3;
 					temp3->prev = temp;
 					temp3->next = nextNode;
@@ -440,29 +497,34 @@ void insertBuffer(buffer *buf, int c) {
 					printBuffer(buf);
 					move(row + 1, 0);
 				}
-				
-				//Condition for new line being in between two lines
-				else {
+
+				// Condition for new line being in between two lines
+				else
+				{
 					temp3->prev = temp;
 					temp3->next = nextNode;
 					temp->next = temp3;
 					nextNode->prev = temp3;
 					printBuffer(buf);
 					move(row + 1, 0);
-				}				
+				}
 			}
-			
-			//For any other character
-			else {
-				//To count the number of characters in that line
-				for(count = 0; temp->p[count] != '\0'; count++);
-			
-				//No of characters in the line exceeds availabilty
-				if(count == maxCols - 1) {
-					ctemp = temp->p[count - 2]; //Last char of that line
-					//Next line is present
-					if(temp->next != NULL) {
-						for(i = maxCols - 4; i >= col; i--)
+
+			// For any other character
+			else
+			{
+				// To count the number of characters in that line
+				for (count = 0; temp->p[count] != '\0'; count++)
+					;
+
+				// No of characters in the line exceeds availabilty
+				if (count == maxCols - 1)
+				{
+					ctemp = temp->p[count - 2]; // Last char of that line
+					// Next line is present
+					if (temp->next != NULL)
+					{
+						for (i = maxCols - 4; i >= col; i--)
 							temp->p[i + 1] = temp->p[i];
 						temp->p[col] = c;
 						printBuffer(buf);
@@ -470,17 +532,18 @@ void insertBuffer(buffer *buf, int c) {
 						insertBuffer(buf, ctemp);
 						move(row, col + 1);
 					}
-					
-					else {
-						temp2 = (node*)malloc(sizeof(node));
+
+					else
+					{
+						temp2 = (node *)malloc(sizeof(node));
 						buf->bufRows++;
-						temp2->p = (int*)malloc(sizeof(int)*maxCols);
+						temp2->p = (int *)malloc(sizeof(int) * maxCols);
 						temp2->p[0] = '\0';
 						temp2->next = NULL;
 						temp2->prev = temp;
 						temp->next = temp2;
 						buf->tail = buf->end = temp2;
-						for(i = maxCols - 4; i >= col ; i--)
+						for (i = maxCols - 4; i >= col; i--)
 							temp->p[i + 1] = temp->p[i];
 						temp->p[col] = c;
 						printBuffer(buf);
@@ -489,24 +552,27 @@ void insertBuffer(buffer *buf, int c) {
 						move(row, col + 1);
 					}
 				}
-				else {
-					//To shift the characters to the right
-					for(i = count - 1; i >= col; i--) {
+				else
+				{
+					// To shift the characters to the right
+					for (i = count - 1; i >= col; i--)
+					{
 						temp->p[i + 1] = temp->p[i];
 					}
-					//To insert at the specific position
+					// To insert at the specific position
 					temp->p[col] = c;
 					printBuffer(buf);
-					move(row, col + 1); //To move the cursor back to the insertion position in the middle
+					move(row, col + 1); // To move the cursor back to the insertion position in the middle
 				}
 			}
 		}
-	} 
+	}
 }
 
-void tabPrompt() {
+void tabPrompt()
+{
 	char ch;
-	int c;	
+	int c;
 
 	wclear(win);
 	callBox();
@@ -514,10 +580,12 @@ void tabPrompt() {
 	wrefresh(win);
 	wmove(win, 2, 1);
 	wrefresh(win);
-	//Accepting user input
-	while((ch = getch()) != '\n') {
+	// Accepting user input
+	while ((ch = getch()) != '\n')
+	{
 		c = (int)ch;
-		if(ch == 7) {
+		if (ch == 7)
+		{
 			wclear(win);
 			callBox();
 			mvwprintw(win, 1, 1, "Tab width (2/4/8) : ");
@@ -528,8 +596,8 @@ void tabPrompt() {
 		wrefresh(win);
 	}
 	c = c - 48;
-	if(c != 2 && c != 4 && c != 8)
-		tabglobal = 4; //Default tab value
+	if (c != 2 && c != 4 && c != 8)
+		tabglobal = 4; // Default tab value
 	else
 		tabglobal = c;
 
@@ -539,10 +607,12 @@ void tabPrompt() {
 	wrefresh(win);
 	wmove(win, 2, 1);
 	wrefresh(win);
-	//Accepting user input
-	while((ch = getch()) != '\n') {
+	// Accepting user input
+	while ((ch = getch()) != '\n')
+	{
 		c = (int)ch;
-		if(ch == 7) {
+		if (ch == 7)
+		{
 			wclear(win);
 			callBox();
 			mvwprintw(win, 1, 1, "Automatic indentation (y/n) : ");
@@ -552,38 +622,44 @@ void tabPrompt() {
 			mvwprintw(win, 2, 1, "%c", c);
 		wrefresh(win);
 	}
-	if(c == 'y') 
+	if (c == 'y')
 		indentglobal = 1;
 	else
 		indentglobal = 0;
 }
 
-void insertTab(buffer *buf) {
+void insertTab(buffer *buf)
+{
 	int i;
-	for(i = 0; i < tabglobal; i++)
+	for (i = 0; i < tabglobal; i++)
 		insertBuffer(buf, 32);
 }
 
-void destroyBuffer(buffer *buf) {
+void destroyBuffer(buffer *buf)
+{
 	node *temp, *temp2;
 	temp = buf->head;
-	while(temp != buf->tail) {
+	while (temp != NULL)
+	{
 		temp2 = temp;
 		temp = temp->next;
-		free(temp2);
+		free(temp2->p); // Free the int array first
+		free(temp2);	// Then free the node
 	}
 	buf->head = buf->tail = buf->start = buf->end = NULL;
 	buf->bufRows = -1;
 }
 
-void backBuffer(buffer *buf) {
+void backBuffer(buffer *buf)
+{
 	node *temp, *temp2;
 	int i = 0, count, row, col, midflag = 0;
 	getyx(stdscr, cRow, cCol);
 	row = cRow;
 	col = cCol;
-	
-	if(righta == 1) {
+
+	if (righta == 1)
+	{
 		destroyBuffer(buf);
 		printBuffer(buf);
 		righta = 0;
@@ -591,125 +667,146 @@ void backBuffer(buffer *buf) {
 	}
 
 	temp = buf->start;
-	//Condition for backspace pressed as the first character
-	if((buf->head == buf->tail) && buf->head == NULL)
-		return;	
-	while(i != row) {
-			//Condition when input reaches end of line, to create a new line
-			if(temp->next == NULL) {
-				temp2 = (node*)malloc(sizeof(node));
-				buf->bufRows++;
-				temp2->p = (int*)malloc(sizeof(int)*maxCols);
-				temp2->next = NULL;
-				temp2->prev = temp;
-				temp->next = temp2;
-				buf->tail = buf->end = temp2;
-				temp = temp2;
-			}
-			else 
-				temp = temp->next;
-			i++;
+	// Condition for backspace pressed as the first character
+	if ((buf->head == buf->tail) && buf->head == NULL)
+		return;
+	while (i != row)
+	{
+		// Condition when input reaches end of line, to create a new line
+		if (temp->next == NULL)
+		{
+			temp2 = (node *)malloc(sizeof(node));
+			buf->bufRows++;
+			temp2->p = (int *)malloc(sizeof(int) * maxCols);
+			temp2->next = NULL;
+			temp2->prev = temp;
+			temp->next = temp2;
+			buf->tail = buf->end = temp2;
+			temp = temp2;
+		}
+		else
+			temp = temp->next;
+		i++;
 	}
 
-	//For scrolling
-	if(row == 0 && col == 0 && temp->prev != NULL) {
+	// For scrolling
+	if (row == 0 && col == 0 && temp->prev != NULL)
+	{
 		buf->start = buf->start->prev;
 		buf->end = buf->end->prev;
 		printBuffer(buf);
 		return;
 	}
-		
-	//Condition for backspace at the starting of a line
-	if((col == 0) && (row != 0)) {
+
+	// Condition for backspace at the starting of a line
+	if ((col == 0) && (row != 0))
+	{
 		temp = temp->prev;
-		for(count = 0; temp->p[count] != '\0'; count++); //To count the number of characters present in the previous line
-		
-		//To delete the node if it is empty
+		for (count = 0; temp->p[count] != '\0'; count++)
+			; // To count the number of characters present in the previous line
+
+		// To delete the node if it is empty
 		temp2 = temp->next;
-		if(temp2->next != NULL) { //Condition for deletion of middle node 
+		if (temp2->next != NULL)
+		{ // Condition for deletion of middle node
 			temp->next = temp2->next;
 			temp2->next->prev = temp;
 			midflag = 1;
 		}
-		else { //Condition for deletion of last node
+		else
+		{ // Condition for deletion of last node
 			temp->next = NULL;
 			buf->tail = buf->end = temp;
 		}
-		
-		//To copy one line to the end of the previous line
-		while(temp2->p[col] != '\0') {
+
+		// To copy one line to the end of the previous line
+		while (temp2->p[col] != '\0')
+		{
 			temp->p[count - 1] = temp2->p[col];
 			col++;
 			count++;
 		}
-		temp->p[count-1] = '\0';
-		free(temp2);
+		temp->p[count - 1] = '\0';
+		free(temp2->p); // Free the int array first
+		free(temp2);	// Then free the node
 		buf->bufRows--;
 		printBuffer(buf);
-		if(midflag == 1)
+		if (midflag == 1)
 			move(row - 1, count - 2);
 		else
 			move(row - 1, count - 1);
 	}
-	
-	else {
-		for(i = col-1; temp->p[i] != '\0'; i++) {
-			temp->p[i] = temp->p[i+1];
+
+	else
+	{
+		for (i = col - 1; temp->p[i] != '\0'; i++)
+		{
+			temp->p[i] = temp->p[i + 1];
 		}
 		printBuffer(buf);
 		move(row, col - 1);
 	}
 }
 
-void deleteBuffer(buffer *buf) {
+void deleteBuffer(buffer *buf)
+{
 	node *temp, *temp2;
 	int i = 0, count, row, col;
 	getyx(stdscr, cRow, cCol);
 	row = cRow;
 	col = cCol;
-	
-	if(righta == 1) {
+
+	if (righta == 1)
+	{
 		destroyBuffer(buf);
 		printBuffer(buf);
 		righta = 0;
 		return;
 	}
-	
+
 	temp = buf->start;
-	while(i != cRow) {
+	while (i != cRow)
+	{
 		temp = temp->next;
 		i++;
 	}
 	temp2 = temp;
-	
-	//Condition for delete pressed at the end of a line	
-	if((temp->p[col] == '\0') || (temp->p[col] == '\n')){
-		if(temp->next != NULL) {
+
+	// Condition for delete pressed at the end of a line
+	if ((temp->p[col] == '\0') || (temp->p[col] == '\n'))
+	{
+		if (temp->next != NULL)
+		{
 			count = col;
-			temp = temp->next;		
-			for(i = 0; temp->p[i] != '\0'; i++) {
+			temp = temp->next;
+			for (i = 0; temp->p[i] != '\0'; i++)
+			{
 				temp2->p[count] = temp->p[i];
 				count++;
 			}
 			temp2->p[count] = '\0';
 
-			if(temp->next != NULL)
+			if (temp->next != NULL)
 				temp2->next = temp->next;
-			else {
+			else
+			{
 				temp2->next = NULL;
 				buf->tail = buf->end = temp2;
 			}
-			free(temp);
+			free(temp->p); // Free the int array first
+			free(temp);	   // Then free the node
 			buf->bufRows--;
-		
+
 			printBuffer(buf);
 			move(row, col);
 		}
 	}
-	//Condition for delete pressed anywhere else
-	else {
-		for(i = cCol; temp2->p[i] != '\0'; i++) {
-			temp2->p[i] = temp2->p[i+1];	
+	// Condition for delete pressed anywhere else
+	else
+	{
+		for (i = cCol; temp2->p[i] != '\0'; i++)
+		{
+			temp2->p[i] = temp2->p[i + 1];
 		}
 		move(row, col);
 	}
@@ -717,70 +814,82 @@ void deleteBuffer(buffer *buf) {
 	move(row, col);
 }
 
-void printBuffer(buffer *buf) {
+void printBuffer(buffer *buf)
+{
 	node *temp;
 	int i = 0;
 	clear();
 	addTilda();
-	
-	if(buf->head == NULL && buf->tail == NULL)
+
+	if (buf->head == NULL && buf->tail == NULL)
 		return;
 	temp = buf->start;
-	
-	while(temp != buf->end) {
-		//Printing a line
-		while(temp->p[i] != '\0') {
+
+	while (temp != buf->end)
+	{
+		// Printing a line
+		while (temp->p[i] != '\0')
+		{
 			printw("%c", temp->p[i]);
 			i++;
 		}
 		temp = temp->next;
 		i = 0;
 	}
-	//Printing the last line
-	for(i = 0; temp->p[i] != '\0'; i++)
+	// Printing the last line
+	for (i = 0; temp->p[i] != '\0'; i++)
 		printw("%c", temp->p[i]);
 }
 
 /*--------------------------- CURSOR MOVEMENTS -----------------------------*/
-void arrowLeft(buffer *buf) {
+void arrowLeft(buffer *buf)
+{
 	node *temp;
 	int i = 0;
 	getyx(stdscr, cRow, cCol);
-	
-	temp = buf->start;	
-	while(i != cRow) {
+
+	temp = buf->start;
+	while (i != cRow)
+	{
 		temp = temp->next;
 		i++;
 	}
 
-	//To avoid arrow key movements when no character is entered
-	if((cCol == 0) && (cRow == 0) && (buf->head == NULL) && (buf->tail == NULL)) {
+	// To avoid arrow key movements when no character is entered
+	if ((cCol == 0) && (cRow == 0) && (buf->head == NULL) && (buf->tail == NULL))
+	{
 		move(cRow, cCol);
 		return;
 	}
 
-	if(temp == NULL && cRow != 0) {
+	if (temp == NULL && cRow != 0)
+	{
 		move(cRow - 1, cCol);
 		return;
 	}
-			
-	
-	//Conditon for key pressed in empty editor
-	if((temp->prev == NULL) && (cCol==0))
+
+	// Conditon for key pressed in empty editor
+	if ((temp->prev == NULL) && (cCol == 0))
 		move(cRow, cCol);
-	else {
-		//Conditon for key pressed at the starting of a line
-		if(cCol == 0) {
-			if(temp != buf->start) { //not on first line
+	else
+	{
+		// Conditon for key pressed at the starting of a line
+		if (cCol == 0)
+		{
+			if (temp != buf->start)
+			{ // not on first line
 				temp = temp->prev;
-				for(i = 0; temp->p[i] != '\0'; i++);
+				for (i = 0; temp->p[i] != '\0'; i++)
+					;
 				move(cRow - 1, i - 1);
 			}
-			else if(buf->start->prev != NULL) { //for scrolling
+			else if (buf->start->prev != NULL)
+			{ // for scrolling
 				buf->start = buf->start->prev;
 				buf->end = buf->end->prev;
 				temp = temp->prev;
-				for(i = 0; temp->p[i] != '\0'; i++);
+				for (i = 0; temp->p[i] != '\0'; i++)
+					;
 				printBuffer(buf);
 				move(0, i - 1);
 			}
@@ -790,32 +899,38 @@ void arrowLeft(buffer *buf) {
 	}
 }
 
-void arrowRight(buffer *buf) {
+void arrowRight(buffer *buf)
+{
 	node *temp;
 	int i = 0;
 	getyx(stdscr, cRow, cCol);
 
-	temp = buf->start;	
-	while(i != cRow) {
+	temp = buf->start;
+	while (i != cRow)
+	{
 		temp = temp->next;
 		i++;
 	}
-	if((cCol == 0) && (cRow == 0) && (buf->head == NULL) && (buf->tail == NULL)) {
+	if ((cCol == 0) && (cRow == 0) && (buf->head == NULL) && (buf->tail == NULL))
+	{
 		move(cRow, cCol);
 		return;
 	}
-	if(temp == NULL && cRow != 0) {
+	if (temp == NULL && cRow != 0)
+	{
 		move(cRow - 1, cCol);
 		return;
 	}
-	//Condition for last character of last line
-	if((temp->next == NULL) && (temp->p[cCol] == '\0'))
+	// Condition for last character of last line
+	if ((temp->next == NULL) && (temp->p[cCol] == '\0'))
 		move(cRow, cCol);
-	//Condition for last character of any other line
-	else if(temp->p[cCol] == '\0') {
-		if(temp != buf->end) //not last line
+	// Condition for last character of any other line
+	else if (temp->p[cCol] == '\0')
+	{
+		if (temp != buf->end) // not last line
 			move(cRow + 1, 0);
-		else if(buf->end->next != NULL) { //for scrolling
+		else if (buf->end->next != NULL)
+		{ // for scrolling
 			buf->end = buf->end->next;
 			buf->start = buf->start->next;
 			printBuffer(buf);
@@ -826,71 +941,88 @@ void arrowRight(buffer *buf) {
 		move(cRow, cCol + 1);
 }
 
-void arrowUp(buffer *buf) {
+void arrowUp(buffer *buf)
+{
 	node *temp;
 	int i = 0;
 	getyx(stdscr, cRow, cCol);
 	temp = buf->start;
-	
-	while(i != cRow) {
+
+	while (i != cRow)
+	{
 		temp = temp->next;
 		i++;
 	}
-	if(temp == NULL && cRow != 0) {
+	if (temp == NULL && cRow != 0)
+	{
 		move(cRow - 1, cCol);
 		return;
 	}
-	
-	//Condition for cursor not on the first line
-	if(cRow != 0) {
-		//Condition for end of a line
-		if((temp->p[cCol] == '\0') || (temp->p[cCol] == '\n')) {
+
+	// Condition for cursor not on the first line
+	if (cRow != 0)
+	{
+		// Condition for end of a line
+		if ((temp->p[cCol] == '\0') || (temp->p[cCol] == '\n'))
+		{
 			temp = temp->prev;
-			for(i = 0; temp->p[i] != '\0'; i++);
+			for (i = 0; temp->p[i] != '\0'; i++)
+				;
 			move(cRow - 1, i - 1);
 		}
 		else
 			move(cRow - 1, cCol);
 	}
-	else { //Cursor on first line
-		if(temp == buf->head) 
+	else
+	{ // Cursor on first line
+		if (temp == buf->head)
 			move(cRow, cCol);
-		else if(buf->start->prev != NULL) {
+		else if (buf->start->prev != NULL)
+		{
 			buf->start = buf->start->prev;
 			buf->end = buf->end->prev;
 			temp = temp->prev;
-			for(i = 0; temp->p[i] != '\0'; i++);
+			for (i = 0; temp->p[i] != '\0'; i++)
+				;
 			printBuffer(buf);
 			move(0, i - 1);
 		}
 	}
 }
 
-void arrowDown(buffer *buf) {
+void arrowDown(buffer *buf)
+{
 	node *temp;
 	int i = 0;
 	getyx(stdscr, cRow, cCol);
 
 	temp = buf->start;
-	while(i != cRow) {
+	while (i != cRow)
+	{
 		temp = temp->next;
 		i++;
 	}
-	if((cCol == 0) && (cRow == 0) && (buf->head == NULL) && (buf->tail == NULL)) {
+	if ((cCol == 0) && (cRow == 0) && (buf->head == NULL) && (buf->tail == NULL))
+	{
 		move(cRow, cCol);
 		return;
 	}
-	if(temp == NULL && cRow != 0) {
+	if (temp == NULL && cRow != 0)
+	{
 		move(cRow, cCol);
 		return;
 	}
-	if(temp->next != NULL) {
-		if(temp != buf->end) { //Not the last line on the screen
-			//Condition for end of a line
-			if((temp->p[cCol] == '\0') || (temp->p[cCol] == '\n')) {
+	if (temp->next != NULL)
+	{
+		if (temp != buf->end)
+		{ // Not the last line on the screen
+			// Condition for end of a line
+			if ((temp->p[cCol] == '\0') || (temp->p[cCol] == '\n'))
+			{
 				temp = temp->next;
-				for(i = 0; temp->p[i] != '\0'; i++);
-				if(temp->p[i - 1] == '\n')
+				for (i = 0; temp->p[i] != '\0'; i++)
+					;
+				if (temp->p[i - 1] == '\n')
 					move(cRow + 1, i - 1);
 				else
 					move(cRow + 1, i);
@@ -898,70 +1030,80 @@ void arrowDown(buffer *buf) {
 			else
 				move(cRow + 1, cCol);
 		}
-		else { //For scrolling
+		else
+		{ // For scrolling
 			buf->end = buf->end->next;
 			buf->start = buf->start->next;
 			temp = temp->next;
-			for(i = 0; temp->p[i] != '\0'; i++);
+			for (i = 0; temp->p[i] != '\0'; i++)
+				;
 			printBuffer(buf);
 			move(maxRows, i);
 		}
 	}
-	//Condtion for last line of the data structure
+	// Condtion for last line of the data structure
 	else
 		move(cRow, cCol);
 }
-void mouseLeftKey(buffer *buf) {
+void mouseLeftKey(buffer *buf)
+{
 	MEVENT event;
 	node *temp;
 	int i = 0;
 	temp = buf->start;
-	
-	if(temp == NULL) {
+
+	if (temp == NULL)
+	{
 		move(cRow, cCol);
 		return;
 	}
-			
- 	if (getmouse(&event) == OK) {
-		if(event.bstate & BUTTON1_PRESSED) {
-			while((i != event.y) && (temp->next != NULL)) {
+
+	if (getmouse(&event) == OK)
+	{
+		if (event.bstate & BUTTON1_PRESSED)
+		{
+			while ((i != event.y) && (temp->next != NULL))
+			{
 				temp = temp->next;
 				i++;
 			}
 			i = 0;
-			for(i = 0; temp->p[i] != '\0'; i++);//To count the number of columns
-			if(event.x <= i) {
+			for (i = 0; temp->p[i] != '\0'; i++)
+				; // To count the number of columns
+			if (event.x <= i)
+			{
 				move(event.y, event.x);
 			}
 			else
 				move(event.y, i - 1);
 		}
 	}
-}	
+}
 
 /*--------------------------------- FEATURES ------------------------------------*/
-void search(buffer *buf) {
+void search(buffer *buf)
+{
 	int tRow, tCol;
 	int c, i = 0, rowCount = 0, startCol = 0, j = 0, diff = 0, countReplace = 0;
 	char *foundWord = NULL;
 	char ch, chtemp[300], chtemp2[300], chtemp3[300], word[50];
 	node *temp;
 
-	//Refreshing window
+	// Refreshing window
 	getyx(stdscr, cRow, cCol);
 	tRow = cRow;
 	tCol = cCol;
 	printBuffer(buf);
 	move(tRow, tCol);
-	
+
 	temp = buf->head;
-	
+
 	wclear(win);
 	callBox();
 	getyx(stdscr, cRow, cCol);
 	getmaxyx(stdscr, maxRows, maxCols);
 
-	//Handling user input
+	// Handling user input
 	mvwprintw(win, 1, 1, "1. Search only");
 	mvwprintw(win, 2, 1, "2. Search and Replace\n");
 	wrefresh(win);
@@ -969,10 +1111,12 @@ void search(buffer *buf) {
 	wmove(win, 3, 1);
 	wrefresh(win);
 
-	//Accepting user input
-	while((ch = getch()) != '\n') {
+	// Accepting user input
+	while ((ch = getch()) != '\n')
+	{
 		c = (int)ch;
-		if(ch == 7) {
+		if (ch == 7)
+		{
 			wclear(win);
 			callBox();
 			mvwprintw(win, 1, 1, "1. Search only");
@@ -985,237 +1129,270 @@ void search(buffer *buf) {
 	}
 	wclear(win);
 	callBox();
-	
+
 	c = c - 48;
-	switch(c) {
-		case 1 :
-			getyx(stdscr, cRow, cCol);
-			tRow = cRow;
-			tCol = tCol;
-			
-			mvwprintw(win, 1, 1, "Enter word to be searched:");
-			wrefresh(win);
-			i = 0;
-			wmove(win, 2, 1);
-			wrefresh(win);
-			
-			//Accepting user input : chtemp2 contains substring to be searched
-			chtemp2[0] = '\0';
-			while((ch = getch()) != '\n') {
-				if(ch == 7) {
-					i--;
-					chtemp2[i] = '\0';
-					wclear(win);
-					callBox();
-					mvwprintw(win, 1, 1, "Enter word to be searched:");
-					wrefresh(win);
-				}
-				else {
-					chtemp2[i] = ch;
-					chtemp2[i + 1] = '\0';
-					i++;
-				}
-				mvwprintw(win, 2, 1, "%s", chtemp2);
-				wrefresh(win);
-			}	
-			
-			//To dissapear the box window
-			insertBuffer(buf, 'f');
-			backBuffer(buf);
+	switch (c)
+	{
+	case 1:
+		getyx(stdscr, cRow, cCol);
+		tRow = cRow;
+		tCol = cCol;
 
-			while(temp != NULL) {
-				//Store every line of the editor in chtemp
-				for(i = 0; temp->p[i] != '\0'; i++) {
-					chtemp[i] = (char)temp->p[i]; 
-				}
-				if(chtemp[i - 1] == '\n')
+		mvwprintw(win, 1, 1, "Enter word to be searched:");
+		wrefresh(win);
+		i = 0;
+		wmove(win, 2, 1);
+		wrefresh(win);
+
+		// Accepting user input : chtemp2 contains substring to be searched
+		chtemp2[0] = '\0';
+		while ((ch = getch()) != '\n')
+		{
+			if (ch == 7)
+			{
+				i--;
+				chtemp2[i] = '\0';
+				wclear(win);
+				callBox();
+				mvwprintw(win, 1, 1, "Enter word to be searched:");
+				wrefresh(win);
+			}
+			else
+			{
+				chtemp2[i] = ch;
+				chtemp2[i + 1] = '\0';
+				i++;
+			}
+			mvwprintw(win, 2, 1, "%s", chtemp2);
+			wrefresh(win);
+		}
+
+		// To dissapear the box window
+		insertBuffer(buf, 'f');
+		backBuffer(buf);
+
+		while (temp != NULL)
+		{
+			// Store every line of the editor in chtemp
+			for (i = 0; temp->p[i] != '\0'; i++)
+			{
+				chtemp[i] = (char)temp->p[i];
+			}
+			if (chtemp[i - 1] == '\n')
 				i = i - 1;
-				chtemp[i] = ' ';
-				chtemp[i + 1] = '\0';
+			chtemp[i] = ' ';
+			chtemp[i + 1] = '\0';
 
-				//To separate each word of the line and compare it with the substring to be searched
-				foundWord = strtok(chtemp, " ");
+			// To separate each word of the line and compare it with the substring to be searched
+			foundWord = strtok(chtemp, " ");
+			startCol = foundWord - chtemp;
+			while (foundWord != NULL)
+			{
+				strcpy(word, foundWord);
+				// If word found, highlight it
+				if (strcmp(word, chtemp2) == 0)
+				{
+					move(rowCount, startCol);
+					highlight(buf, rowCount, rowCount, startCol, startCol + strlen(word) - 1);
+				}
+				foundWord = strtok(NULL, " ");
 				startCol = foundWord - chtemp;
-				while(foundWord != NULL) {
-					strcpy(word, foundWord);
-					//If word found, highlight it
-					if(strcmp(word, chtemp2) == 0) {
-						move(rowCount, startCol);
-						highlight(buf, rowCount, rowCount, startCol, startCol + strlen(word) - 1);
-					}
-					foundWord = strtok(NULL, " ");
-					startCol = foundWord - chtemp;
-				}
-				temp = temp->next;
-				rowCount++;
 			}
-			move(0, 0);
-			
-			break;
-			
-		case 2 :
-			wclear(win);
-			callBox();
-			getyx(stdscr, cRow, cCol);
-			tRow = cRow;
-			tCol = tCol;
+			temp = temp->next;
+			rowCount++;
+		}
+		move(0, 0);
 
-			mvwprintw(win, 1, 1, "Enter word to be searched:");
-			wrefresh(win);
-			i = 0;
-			wmove(win, 2, 1);
-			wrefresh(win);
+		break;
 
-			//Accepting string to be searched in chtemp2
-			chtemp2[0] = '\0';
-			while((ch = getch()) != '\n') {
-				if(ch == 7) {
-					i--;
-					chtemp2[i] = '\0';
-					wclear(win);
-					callBox();
-					mvwprintw(win, 1, 1, "Enter word to be searched:");
-					wrefresh(win);
-				}
-				else {
-					chtemp2[i] = ch;
-					chtemp2[i + 1] = '\0';
-					i++;
-				}
-				mvwprintw(win, 2, 1, "%s", chtemp2);
+	case 2:
+		wclear(win);
+		callBox();
+		getyx(stdscr, cRow, cCol);
+		tRow = cRow;
+		tCol = cCol;
+
+		mvwprintw(win, 1, 1, "Enter word to be searched:");
+		wrefresh(win);
+		i = 0;
+		wmove(win, 2, 1);
+		wrefresh(win);
+
+		// Accepting string to be searched in chtemp2
+		chtemp2[0] = '\0';
+		while ((ch = getch()) != '\n')
+		{
+			if (ch == 7)
+			{
+				i--;
+				chtemp2[i] = '\0';
+				wclear(win);
+				callBox();
+				mvwprintw(win, 1, 1, "Enter word to be searched:");
 				wrefresh(win);
 			}
-
-			wclear(win);
-			callBox();
-			mvwprintw(win, 1, 1, "Enter replacing word:");
+			else
+			{
+				chtemp2[i] = ch;
+				chtemp2[i + 1] = '\0';
+				i++;
+			}
+			mvwprintw(win, 2, 1, "%s", chtemp2);
 			wrefresh(win);
-			i = 0;
-			wmove(win, 2, 1);
-			wrefresh(win);
+		}
 
-			//Accepting string to be replaced with in chtemp3			
-			chtemp3[0] = '\0';
-			while((ch = getch()) != '\n') {
-				if(ch == 7) {
-					i--;
-					chtemp3[i] = '\0';
-					wclear(win);
-					callBox();
-					mvwprintw(win, 1, 1, "Enter replacing word:");
-					wrefresh(win);
-				}
-				else {
-					chtemp3[i] = ch;
-					chtemp3[i + 1] = '\0';
-					i++;
-				}
-				mvwprintw(win, 2, 1, "%s", chtemp3);
+		wclear(win);
+		callBox();
+		mvwprintw(win, 1, 1, "Enter replacing word:");
+		wrefresh(win);
+		i = 0;
+		wmove(win, 2, 1);
+		wrefresh(win);
+
+		// Accepting string to be replaced with in chtemp3
+		chtemp3[0] = '\0';
+		while ((ch = getch()) != '\n')
+		{
+			if (ch == 7)
+			{
+				i--;
+				chtemp3[i] = '\0';
+				wclear(win);
+				callBox();
+				mvwprintw(win, 1, 1, "Enter replacing word:");
 				wrefresh(win);
-			}	
+			}
+			else
+			{
+				chtemp3[i] = ch;
+				chtemp3[i + 1] = '\0';
+				i++;
+			}
+			mvwprintw(win, 2, 1, "%s", chtemp3);
+			wrefresh(win);
+		}
 
-			//Difference in length between the original word and the new word
-			diff = strlen(chtemp3) - strlen(chtemp2);
+		// Difference in length between the original word and the new word
+		diff = strlen(chtemp3) - strlen(chtemp2);
 
-			while(temp != NULL) {
-				//Search for every word
-				for(i = 0; temp->p[i] != '\0'; i++) {
-					chtemp[i] = (char)temp->p[i];
-				}
-				if(chtemp[i - 1] == '\n')
+		while (temp != NULL)
+		{
+			// Search for every word
+			for (i = 0; temp->p[i] != '\0'; i++)
+			{
+				chtemp[i] = (char)temp->p[i];
+			}
+			if (chtemp[i - 1] == '\n')
 				i = i - 1;
-				chtemp[i] = ' ';
-				chtemp[i + 1] = '\0';
+			chtemp[i] = ' ';
+			chtemp[i + 1] = '\0';
 
-				foundWord = strtok(chtemp, " ");
-				startCol = foundWord - chtemp;
-				while(foundWord != NULL) {
-					strcpy(word, foundWord);
-					if(strcmp(word, chtemp2) == 0) {
-						move(rowCount, startCol);
-						countReplace++; //To count the number of words replaced
-						//To delete the original word
-						for(i = startCol; i <= startCol + strlen(word) - 1; i++) {
-							deleteBuffer(buf);
-						}
-						
-						j = 0;
-						//To insert the new word
-						for(i = startCol; i <= startCol + strlen(chtemp3) - 1; i++) {
-							insertBuffer(buf, chtemp3[j]);
-							j++;
-						}	
+			foundWord = strtok(chtemp, " ");
+			startCol = foundWord - chtemp;
+			while (foundWord != NULL)
+			{
+				strcpy(word, foundWord);
+				if (strcmp(word, chtemp2) == 0)
+				{
+					move(rowCount, startCol);
+					countReplace++; // To count the number of words replaced
+					// To delete the original word
+					for (i = startCol; i <= startCol + strlen(word) - 1; i++)
+					{
+						deleteBuffer(buf);
 					}
-					foundWord = strtok(NULL, " ");
-					startCol = (foundWord - chtemp) + (diff * countReplace);
+
+					j = 0;
+					// To insert the new word
+					for (i = startCol; i <= startCol + strlen(chtemp3) - 1; i++)
+					{
+						insertBuffer(buf, chtemp3[j]);
+						j++;
+					}
 				}
-				temp = temp->next;
-				rowCount++; 
-				startCol = 0; countReplace = 0; foundWord = NULL;
+				foundWord = strtok(NULL, " ");
+				startCol = (foundWord - chtemp) + (diff * countReplace);
 			}
-			printBuffer(buf);
-			
-			i = 0; rowCount = 0; startCol = 0; j = 0;
+			temp = temp->next;
+			rowCount++;
+			startCol = 0;
+			countReplace = 0;
 			foundWord = NULL;
-			
-			temp = buf->head;
-			
-			//To search the replaced words and highlight them
-			while(temp != NULL) {
-				for(i = 0; temp->p[i] != '\0'; i++) {
-					chtemp[i] = (char)temp->p[i];
-				}
-				if(chtemp[i - 1] == '\n')
-				i = i - 1;
-				
-				chtemp[i] = ' ';
-				chtemp[i + 1] = '\0';
-				foundWord = strtok(chtemp, " ");
-				startCol = foundWord - chtemp;
-				while(foundWord != NULL) {
-					strcpy(word, foundWord);
-					if(strcmp(word, chtemp3) == 0) {
-						move(rowCount, startCol);
-						highlight(buf, rowCount, rowCount, startCol, startCol + strlen(word) - 1);
-					}
-					foundWord = strtok(NULL, " ");
-					startCol = foundWord - chtemp;
-				}
-				temp = temp->next;
-				rowCount++;
+		}
+		printBuffer(buf);
+
+		i = 0;
+		rowCount = 0;
+		startCol = 0;
+		j = 0;
+		foundWord = NULL;
+
+		temp = buf->head;
+
+		// To search the replaced words and highlight them
+		while (temp != NULL)
+		{
+			for (i = 0; temp->p[i] != '\0'; i++)
+			{
+				chtemp[i] = (char)temp->p[i];
 			}
-			move(0, 0);
-			
-			break;
-			
-			
-		default :
-			wclear(win);
-			callBox(); 
-			mvwprintw(win, 1, 1, "Invalid input");
-			wrefresh(win);
-			break;
+			if (chtemp[i - 1] == '\n')
+				i = i - 1;
+
+			chtemp[i] = ' ';
+			chtemp[i + 1] = '\0';
+			foundWord = strtok(chtemp, " ");
+			startCol = foundWord - chtemp;
+			while (foundWord != NULL)
+			{
+				strcpy(word, foundWord);
+				if (strcmp(word, chtemp3) == 0)
+				{
+					move(rowCount, startCol);
+					highlight(buf, rowCount, rowCount, startCol, startCol + strlen(word) - 1);
+				}
+				foundWord = strtok(NULL, " ");
+				startCol = foundWord - chtemp;
+			}
+			temp = temp->next;
+			rowCount++;
+		}
+		move(0, 0);
+
+		break;
+
+	default:
+		wclear(win);
+		callBox();
+		mvwprintw(win, 1, 1, "Invalid input");
+		wrefresh(win);
+		break;
 	}
 	getmaxyx(stdscr, maxRows, maxCols);
-	move(tRow, tCol);	
+	move(tRow, tCol);
 }
 
-void copy(buffer *buf) {
+void copy(buffer *buf)
+{
 	int i = 0, j = 0, x, y, z1 = initr, z2 = initc;
 	node *temp;
-	
+
 	getyx(stdscr, cRow, cCol);
 	x = cRow;
 	y = cCol;
 	temp = buf->start;
-	
-	if(left == 1) {
-		while(i != cRow){
-			temp = temp->next;	
+
+	if (left == 1)
+	{
+		while (i != cRow)
+		{
+			temp = temp->next;
 			i++;
 		}
-		while(x != z1) {
-			while(temp->p[y] != '\0') {
+		while (x != z1)
+		{
+			while (temp->p[y] != '\0')
+			{
 				copy1[j] = temp->p[y];
 				y++;
 				j++;
@@ -1224,20 +1401,25 @@ void copy(buffer *buf) {
 			x++;
 			temp = temp->next;
 		}
-		while(y != z2) {
+		while (y != z2)
+		{
 			copy1[j] = temp->p[y];
 			y++;
 			j++;
 		}
 		copy1[j] = '\0';
 	}
-	else if(right == 1 || righta == 1) {
-		while(i != z1) {
+	else if (right == 1 || righta == 1)
+	{
+		while (i != z1)
+		{
 			temp = temp->next;
 			i++;
 		}
-		while(z1 != cRow) {	
-			while(temp->p[z2] != '\0') {
+		while (z1 != cRow)
+		{
+			while (temp->p[z2] != '\0')
+			{
 				copy1[j] = temp->p[z2];
 				z2++;
 				j++;
@@ -1246,7 +1428,8 @@ void copy(buffer *buf) {
 			z1++;
 			temp = temp->next;
 		}
-		while(cCol != z2) {
+		while (cCol != z2)
+		{
 			copy1[j] = temp->p[z2];
 			z2++;
 			j++;
@@ -1256,46 +1439,52 @@ void copy(buffer *buf) {
 	flag = 0;
 }
 
-void cut(buffer *buf) {
+void cut(buffer *buf)
+{
 	int x, y, i = initr, j = initc, count = 0;
 	node *temp;
-	getyx(stdscr,cRow,cCol);
-	
-	//Copying selected elements		
+	getyx(stdscr, cRow, cCol);
+
+	// Copying selected elements
 	copy(buf);
-	
+
 	x = cRow;
 	y = cCol;
-		
+
 	temp = buf->start;
-	
-	//For right shift
-	if(right == 1 || righta == 1)
+
+	// For right shift
+	if (right == 1 || righta == 1)
 	{
 		righta = 0;
-		while(i != x) {
-			while(temp->p[j] != '\0') {
+		while (i != x)
+		{
+			while (temp->p[j] != '\0')
+			{
 				j++;
 				count++;
 			}
 			temp = temp->next;
 			i++;
-			j=0;
+			j = 0;
 		}
 
-
-		while(j != y) {
+		while (j != y)
+		{
 			count++;
 			j++;
 		}
 
-		move(initr,initc);
+		move(initr, initc);
 	}
 
-	//For left shift
-	else if(left == 1) {
-		while(x != i) {
-			while(temp->p[y]!='\0') {
+	// For left shift
+	else if (left == 1)
+	{
+		while (x != i)
+		{
+			while (temp->p[y] != '\0')
+			{
 				y++;
 				count++;
 			}
@@ -1303,80 +1492,92 @@ void cut(buffer *buf) {
 			x++;
 			y = 0;
 		}
-		while(y != j) {
+		while (y != j)
+		{
 			count++;
 			y++;
-
 		}
-		move(cRow,cCol);
+		move(cRow, cCol);
 	}
-	
-	//Deleting selected elements
-	for(i = 0; i < count; i++) {
+
+	// Deleting selected elements
+	for (i = 0; i < count; i++)
+	{
 		deleteBuffer(buf);
 	}
 }
 
-void paste(buffer *buf) {
+void paste(buffer *buf)
+{
 	int j = 0;
 
 	left = 0;
 	right = 0;
-		
-	//Calling insertBuffer to paste
-	while(copy1[j] != '\0') {
+
+	// Calling insertBuffer to paste
+	while (copy1[j] != '\0')
+	{
 		insertBuffer(buf, copy1[j]);
 		j++;
 	}
 }
 
-void selectLeft(buffer *buf){
+void selectLeft(buffer *buf)
+{
 	int x, y, i = 0, count = 0;
 	getyx(stdscr, cRow, cCol);
 	node *temp;
-	
+
 	temp = buf->start;
-	while(i != cRow) {
+	while (i != cRow)
+	{
 		temp = temp->next;
 		i++;
 	}
-	
+
 	x = cRow;
 	y = cCol;
 
-	//To get the starting position from where shift was pressed and record it
-	if(flag == 0) {
+	// To get the starting position from where shift was pressed and record it
+	if (flag == 0)
+	{
 		initr = cRow;
 		initc = cCol;
 		flag = 1;
 	}
 
-	//To handle cursor movements
-	if(cCol == 0 && cRow == 0) {
+	// To handle cursor movements
+	if (cCol == 0 && cRow == 0)
+	{
 		highlight(buf, cRow, cRow, cCol, cCol);
 		move(0, 0);
 	}
-	else if(cCol == 0) {
+	else if (cCol == 0)
+	{
 		highlight(buf, cRow, cRow, cCol, cCol);
 		temp = temp->prev;
-		for(count = 0; temp->p[count] != '\0'; count++);
+		for (count = 0; temp->p[count] != '\0'; count++)
+			;
 		move(x - 1, count);
 	}
-	else {
+	else
+	{
 		highlight(buf, cRow, cRow, cCol, cCol);
 		move(x, y - 1);
 	}
 	left = 1;
 }
 
-void selectRight(buffer *buf){
+void selectRight(buffer *buf)
+{
 	int x2, y2, i = 0;
-	getyx(stdscr,cRow,cCol);
+	getyx(stdscr, cRow, cCol);
 	node *temp;
-	
+
 	temp = buf->start;
-	
-	while(i != cRow) {
+
+	while (i != cRow)
+	{
 		temp = temp->next;
 		i++;
 	}
@@ -1384,22 +1585,26 @@ void selectRight(buffer *buf){
 	x2 = cRow;
 	y2 = cCol;
 
-	//To get the starting position from which shift was pressed	
-	if(flag == 0) {
+	// To get the starting position from which shift was pressed
+	if (flag == 0)
+	{
 		initr = cRow;
 		initc = cCol;
 		flag = 1;
 	}
 
-	//To handle cursor movements
-	if(temp == NULL) {
+	// To handle cursor movements
+	if (temp == NULL)
+	{
 		move(cRow, cCol);
 		return;
 	}
-	if(temp->p[cCol] == '\0') {
+	if (temp->p[cCol] == '\0')
+	{
 		move(cRow + 1, 0);
 	}
-	else {
+	else
+	{
 		highlight(buf, cRow, cRow, cCol, cCol);
 		move(x2, y2 + 1);
 	}
@@ -1407,76 +1612,86 @@ void selectRight(buffer *buf){
 }
 
 /*------------------------ EXTRA FEATURES ------------------------*/
-void deleteRow(buffer *buf) {
+void deleteRow(buffer *buf)
+{
 	int i = 0, tRow;
 	node *temp;
 
 	temp = buf->start;
 	getyx(stdscr, cRow, cCol);
 	tRow = cRow;
-	while(i != cRow) {
+	while (i != cRow)
+	{
 		temp = temp->next;
 		i++;
 	}
-	if(temp == NULL)
+	if (temp == NULL)
 		return;
 	i = 0;
-	while(temp->p[i] != '\0') {
+	while (temp->p[i] != '\0')
+	{
 		i++;
 	}
 	move(tRow, i);
 
-	//Calling backBuffer to backspace the characters in that row
-	for(; i > 0; i--) {
-		backBuffer(buf);	
+	// Calling backBuffer to backspace the characters in that row
+	for (; i > 0; i--)
+	{
+		backBuffer(buf);
 	}
 	move(tRow, 0);
 	deleteBuffer(buf);
 	move(tRow - 1, 0);
 }
 
-void copyRow(buffer *buf) {
+void copyRow(buffer *buf)
+{
 	int i = 0, tempi, j = 0;
 	node *temp;
 	temp = buf->start;
 	getyx(stdscr, cRow, cCol);
 
-	//To traverse till the row
-	while(i != cRow) {
+	// To traverse till the row
+	while (i != cRow)
+	{
 		temp = temp->next;
 		i++;
 	}
-	if(temp == NULL)
+	if (temp == NULL)
 		return;
 	i = 0;
 
-	//To count the number of characters in the row
-	while(temp->p[i] != '\0') {
+	// To count the number of characters in the row
+	while (temp->p[i] != '\0')
+	{
 		i++;
 	}
 	tempi = i;
-	tempi = tempi + 1; 
+	tempi = tempi + 1;
 
-	//To store the characters in the copy array
-	while(tempi != 0) {
+	// To store the characters in the copy array
+	while (tempi != 0)
+	{
 		copy1[j] = (char)temp->p[j];
 		tempi--;
 		j++;
 	}
-	
 }
-void selectAll(buffer *buf) {
+void selectAll(buffer *buf)
+{
 	int i = 0, j = 0;
 	node *temp;
-	
+
 	initr = 0;
 	initc = 0;
-	
+
 	temp = buf->start;
 
-	//To traverse the entire data structure and highlight it 
-	while(temp != NULL) {
-		while(temp->p[j] != '\0') {
+	// To traverse the entire data structure and highlight it
+	while (temp != NULL)
+	{
+		while (temp->p[j] != '\0')
+		{
 			j++;
 		}
 		highlight(buf, i, i, 0, j);
@@ -1487,7 +1702,8 @@ void selectAll(buffer *buf) {
 	righta = 1;
 }
 
-void ctrlRight(buffer *buf) {
+void ctrlRight(buffer *buf)
+{
 	int i = 0, tRow;
 	node *temp;
 
@@ -1495,55 +1711,61 @@ void ctrlRight(buffer *buf) {
 	getyx(stdscr, cRow, cCol);
 	tRow = cRow;
 
-	//To traverse till the row
-	while(i != cRow) {
+	// To traverse till the row
+	while (i != cRow)
+	{
 		temp = temp->next;
 		i++;
 	}
 	i = cCol;
-	
-	if(temp == NULL)
+
+	if (temp == NULL)
 		return;
-	
-	//To make the cursor point to the nearest word
-	while(temp->p[i] == ' ')
+
+	// To make the cursor point to the nearest word
+	while (temp->p[i] == ' ')
 		i = i + 1;
-	
-	//To search for the nearest word
-	while(temp->p[i] != ' ') {
-		if(temp->p[i] == '\0' || temp->p[i] == '\n') {
+
+	// To search for the nearest word
+	while (temp->p[i] != ' ')
+	{
+		if (temp->p[i] == '\0' || temp->p[i] == '\n')
+		{
 			break;
 		}
 		i++;
 	}
-	
-	//To make the cursor point to the next word
+
+	// To make the cursor point to the next word
 	move(tRow, i);
 }
-void ctrlLeft(buffer *buf) {
+void ctrlLeft(buffer *buf)
+{
 	int i = 0, tRow;
 	node *temp;
 
 	temp = buf->start;
 	getyx(stdscr, cRow, cCol);
 	tRow = cRow;
-	while(i != cRow) {
+	while (i != cRow)
+	{
 		temp = temp->next;
 		i++;
 	}
 	i = cCol;
-	
-	if(temp == NULL)
+
+	if (temp == NULL)
 		return;
-	
-	while(temp->p[i] == ' ' && i != 0)
+
+	while (temp->p[i] == ' ' && i != 0)
 		i = i - 1;
-		
-	while(temp->p[i] != ' ') {
-		if(i == 0)
+
+	while (temp->p[i] != ' ')
+	{
+		if (i == 0)
 			break;
 		i--;
 	}
-	
+
 	move(tRow, i);
 }
