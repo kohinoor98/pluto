@@ -295,13 +295,24 @@ void highlight(buffer *buf, int startRow, int endRow, int startCol, int endCol)
 	temp = buf->start;
 	while (i != startRow)
 	{
+		if (temp == NULL)
+			return; // Safety check: row doesn't exist
 		temp = temp->next;
 		i++;
 	}
 
+	// Safety check: ensure temp is valid
+	if (temp == NULL || temp->p == NULL)
+		return;
+
 	attron(A_BOLD | A_STANDOUT); // To switch on highlight attribute
 	for (i = startCol; i <= endCol; i++)
+	{
+		// Stop if we hit end of string or newline
+		if (temp->p[i] == '\0' || temp->p[i] == '\n')
+			break;
 		mvprintw(startRow, i, "%c", temp->p[i]);
+	}
 	attroff(A_BOLD | A_STANDOUT);
 }
 

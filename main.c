@@ -6,6 +6,13 @@
 
 #define CTRL_KEYPRESS(k) ((k) & 0x1f)
 
+// Key code definitions for cross-platform compatibility
+#define KEY_TAB 9
+#define KEY_NEWLINE 10
+#define KEY_BACKSPACE_ALT 127
+#define KEY_BACKSPACE_CTRL 8
+#define KEY_DELETE_ALT 330
+
 int cRow, cCol;
 int maxRows, maxCols;
 
@@ -77,11 +84,11 @@ int main(int argc, char *argv[])
 			}
 			insertTab(&text);
 		}
-		else if (c == KEY_BACKSPACE)
+		else if (c == KEY_BACKSPACE || c == 127 || c == 8)
 		{
 			backBuffer(&text);
 		}
-		else if (c == KEY_DC)
+		else if (c == KEY_DC || c == 330)
 		{
 			deleteBuffer(&text);
 		}
